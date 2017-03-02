@@ -44,7 +44,7 @@ func parse_args() bool {
 	flag.StringVar(&d1, "d1", "", "Начальная дата выгрузки лога звонков: YYYY-MM-DD")
 	flag.StringVar(&d2, "d2", "", "Конечная дата выгрузки лога звонков: YYYY-MM-DD")
 	flag.StringVar(&fweek, "week", "", "Флаг недельной выгрузки: 1")
-	flag.StringVar(&fweek, "ftime", "", "Флаг выгрузки разбивкой по времени: МСК 00:00-23:59, 9:00-9:30, 9:31-10:00, 10:01-10:30, 10:31-11:00, 11:01-11:30, 10:31-11:00, 11:01-11:30, 11:31-12:00, 12:01-23:59: 1")
+	flag.StringVar(&ftime, "ftime", "", "Флаг выгрузки разбивкой по времени: МСК 00:00-23:59, 9:00-9:30, 9:31-10:00, 10:01-10:30, 10:31-11:00, 11:01-11:30, 10:31-11:00, 11:01-11:30, 11:31-12:00, 12:01-23:59: 1")
 	flag.StringVar(&t1, "t1", "", "Начальное время выгрузки лога звонков(время НСК): HH:MM")
 	flag.StringVar(&t2, "t2", "", "Конечное время выгрузки лога звонков(время НСК): HH:MM")
 	flag.IntVar(&fresult, "fresult", 0, "длительность результативного звонка (в сек)")
@@ -64,7 +64,7 @@ func parse_args() bool {
 		//		LogFile.Println("Не задан параметр -week .")
 	}
 	if ftime == "" {
-		//		LogFile.Println("Не задан параметр -week .")
+		//		LogFile.Println("Не задан параметр -ftime .")
 	}
 	if fresult <= 0 {
 		//		LogFile.Println("Не задан параметр -fresult. Продолжительность результативного звонка - 20 сек.")
@@ -281,27 +281,25 @@ func savetoxlsx0(namef string, datas map[string]DataTelMans, keys []string) {
 
 	}
 
-	if len(keys) >= 0 {
-		row = sheet.AddRow()
-		cell = row.AddCell()
-		cell.Value = "Итог"
-		cell = row.AddCell()
-		cell.Value = ""
-		cell = row.AddCell()
-		cell.Value = ""
-		cell = row.AddCell()
-		cell.Value = sec_to_s(sum_totalsec)
-		cell = row.AddCell()
-		cell.Value = strconv.Itoa(sum_kol_zvonkov)
-		cell = row.AddCell()
-		cell.Value = strconv.Itoa(sum_kolunik)
-		cell = row.AddCell()
-		cell.Value = strconv.Itoa(sum_kolresult)
-		cell = row.AddCell()
-		cell.Value = sec_to_s(sum_secresult)
-		cell = row.AddCell()
-		//			cell.Value = sec_to_s(devidezero(datas[key].totalsec, datas[key].totalzv))
-	}
+	row = sheet.AddRow()
+	cell = row.AddCell()
+	cell.Value = "Итог"
+	cell = row.AddCell()
+	cell.Value = ""
+	cell = row.AddCell()
+	cell.Value = ""
+	cell = row.AddCell()
+	cell.Value = sec_to_s(sum_totalsec)
+	cell = row.AddCell()
+	cell.Value = strconv.Itoa(sum_kol_zvonkov)
+	cell = row.AddCell()
+	cell.Value = strconv.Itoa(sum_kolunik)
+	cell = row.AddCell()
+	cell.Value = strconv.Itoa(sum_kolresult)
+	cell = row.AddCell()
+	cell.Value = sec_to_s(sum_secresult)
+	cell = row.AddCell()
+	//			cell.Value = sec_to_s(devidezero(datas[key].totalsec, datas[key].totalzv))
 
 	err = file.Save(namef)
 	if err != nil {
@@ -615,14 +613,6 @@ func getLogTime(namef, nameFlog, nameftime, d1, d2, t1, t2, fweek string) string
 		tm := strnumtel[key]
 		strnumtel[key] = DataTelMans{tm.fio_rg, tm.fio_man, totsec, len(buf_telunik), kolres, totressec, totkol}
 	}
-
-	// подсчет суммы
-	//	for _, values := range strnumtel {
-
-	//		//		fmt.Println(values)
-	//	}
-
-	//	fmt.Println("strnumtel= ", strnumtel)
 
 	println("Saving xlsx report")
 	savetoxlsx0(namefresult+".xlsx", strnumtel, keys)
