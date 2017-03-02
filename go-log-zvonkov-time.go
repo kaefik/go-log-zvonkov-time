@@ -650,7 +650,7 @@ func main() {
 	}
 	namefileN := make([]string, 9)
 
-	fmonth = "1" // для теста
+	//	fmonth = "1" // для теста
 
 	if ftime != "" {
 		//	//-------указывается время новосибирское
