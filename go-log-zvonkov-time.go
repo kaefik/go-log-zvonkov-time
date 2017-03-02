@@ -209,28 +209,72 @@ func savetoxlsx0(namef string, datas map[string]DataTelMans, keys []string) {
 		cell.Value = titletab[i]
 	}
 
+	sum_kol_zvonkov := 0
+	name_rg := datas[keys[0]].fio_rg
+
 	for i := 0; i < len(keys); i++ {
 		key := keys[i]
+
+		if strings.Compare(name_rg, datas[key].fio_rg) == 0 {
+			sum_kol_zvonkov += datas[key].totalzv
+
+			row = sheet.AddRow()
+			cell = row.AddCell()
+			cell.Value = datas[key].fio_rg
+			cell = row.AddCell()
+			cell.Value = key
+			cell = row.AddCell()
+			cell.Value = datas[key].fio_man
+			cell = row.AddCell()
+			cell.Value = sec_to_s(datas[key].totalsec)
+			cell = row.AddCell()
+			cell.Value = strconv.Itoa(datas[key].totalzv)
+			cell = row.AddCell()
+			cell.Value = strconv.Itoa(datas[key].kolunik)
+			cell = row.AddCell()
+			cell.Value = strconv.Itoa(datas[key].kolresult)
+			cell = row.AddCell()
+			cell.Value = sec_to_s(datas[key].secresult)
+			cell = row.AddCell()
+			cell.Value = sec_to_s(devidezero(datas[key].totalsec, datas[key].totalzv))
+		} else {
+			row = sheet.AddRow()
+			cell = row.AddCell()
+			cell.Value = strconv.Itoa(sum_kol_zvonkov)
+			sum_kol_zvonkov = datas[key].totalzv
+			name_rg = datas[key].fio_rg
+
+			row = sheet.AddRow()
+			cell = row.AddCell()
+			cell.Value = datas[key].fio_rg
+			cell = row.AddCell()
+			cell.Value = key
+			cell = row.AddCell()
+			cell.Value = datas[key].fio_man
+			cell = row.AddCell()
+			cell.Value = sec_to_s(datas[key].totalsec)
+			cell = row.AddCell()
+			cell.Value = strconv.Itoa(datas[key].totalzv)
+			cell = row.AddCell()
+			cell.Value = strconv.Itoa(datas[key].kolunik)
+			cell = row.AddCell()
+			cell.Value = strconv.Itoa(datas[key].kolresult)
+			cell = row.AddCell()
+			cell.Value = sec_to_s(datas[key].secresult)
+			cell = row.AddCell()
+			cell.Value = sec_to_s(devidezero(datas[key].totalsec, datas[key].totalzv))
+
+		}
+
+	}
+
+	if len(keys) >= 0 {
 		row = sheet.AddRow()
 		cell = row.AddCell()
-		cell.Value = datas[key].fio_rg
-		cell = row.AddCell()
-		cell.Value = key
-		cell = row.AddCell()
-		cell.Value = datas[key].fio_man
-		cell = row.AddCell()
-		cell.Value = sec_to_s(datas[key].totalsec)
-		cell = row.AddCell()
-		cell.Value = strconv.Itoa(datas[key].totalzv)
-		cell = row.AddCell()
-		cell.Value = strconv.Itoa(datas[key].kolunik)
-		cell = row.AddCell()
-		cell.Value = strconv.Itoa(datas[key].kolresult)
-		cell = row.AddCell()
-		cell.Value = sec_to_s(datas[key].secresult)
-		cell = row.AddCell()
-		cell.Value = sec_to_s(devidezero(datas[key].totalsec, datas[key].totalzv))
+		cell.Value = strconv.Itoa(sum_kol_zvonkov)
+		sum_kol_zvonkov = datas[keys[len(keys)-1]].totalzv
 	}
+
 	err = file.Save(namef)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -543,6 +587,12 @@ func getLogTime(namef, nameFlog, nameftime, d1, d2, t1, t2, fweek string) string
 		tm := strnumtel[key]
 		strnumtel[key] = DataTelMans{tm.fio_rg, tm.fio_man, totsec, len(buf_telunik), kolres, totressec, totkol}
 	}
+
+	// подсчет суммы
+	//	for _, values := range strnumtel {
+
+	//		//		fmt.Println(values)
+	//	}
 
 	//	fmt.Println("strnumtel= ", strnumtel)
 
