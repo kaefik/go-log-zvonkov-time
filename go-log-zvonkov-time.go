@@ -20,6 +20,7 @@ var (
 	t1      string //  начальное время выборки
 	t2      string // конечное время выборки
 	fweek   string // флаг недельной выгрузки
+	fmonth  string // Флаг выгрузки c первого дня месяца до текущей числа текущего месяца
 	ftime   string // флаг выгрузки разбивкой по времени: МСК 00:00-23:59, 9:00-9:30, 9:31-10:00, 10:01-10:30, 10:31-11:00, 11:01-11:30, 10:31-11:00, 11:01-11:30, 11:31-12:00, 12:01-23:59
 	fresult int    // длительность результативного звонка (в сек)
 	//	LogFile                                    *log.Logger //
@@ -44,6 +45,7 @@ func parse_args() bool {
 	flag.StringVar(&d1, "d1", "", "Начальная дата выгрузки лога звонков: YYYY-MM-DD")
 	flag.StringVar(&d2, "d2", "", "Конечная дата выгрузки лога звонков: YYYY-MM-DD")
 	flag.StringVar(&fweek, "week", "", "Флаг недельной выгрузки: 1")
+	flag.StringVar(&fmonth, "month", "", "Флаг выгрузки c первого дня месяца до текущей числа текущего месяца : 1")
 	flag.StringVar(&ftime, "ftime", "", "Флаг выгрузки разбивкой по времени: МСК 00:00-23:59, 9:00-9:30, 9:31-10:00, 10:01-10:30, 10:31-11:00, 11:01-11:30, 10:31-11:00, 11:01-11:30, 11:31-12:00, 12:01-23:59: 1")
 	flag.StringVar(&t1, "t1", "", "Начальное время выгрузки лога звонков(время НСК): HH:MM")
 	flag.StringVar(&t2, "t2", "", "Конечное время выгрузки лога звонков(время НСК): HH:MM")
@@ -62,6 +64,9 @@ func parse_args() bool {
 	}
 	if fweek == "" {
 		//		LogFile.Println("Не задан параметр -week .")
+	}
+	if fmonth == "" {
+		//		LogFile.Println("Не задан параметр -month .")
 	}
 	if ftime == "" {
 		//		LogFile.Println("Не задан параметр -ftime .")
@@ -506,6 +511,13 @@ func getLogTime(namef, nameFlog, nameftime, d1, d2, t1, t2, fweek string) string
 		endyearmonth = strconv.Itoa(tekyear) + "-" + strconv.Itoa(num_mes(tekmonth))
 		endday = strconv.Itoa(tekday)
 	}
+	if fmonth != "" {
+		tekyear, tekmonth, tekday := time.Now().Date()
+		begday = "1"
+		begyearmonth = strconv.Itoa(tekyear) + "-" + strconv.Itoa(num_mes(tekmonth))
+		endyearmonth = strconv.Itoa(tekyear) + "-" + strconv.Itoa(num_mes(tekmonth))
+		endday = strconv.Itoa(tekday)
+	}
 	namefresult := nameftime + " - " + begyearmonth + "-" + begday + " по " + endyearmonth + "-" + endday + " - лог звонков"
 	println("Begin date: ", begyearmonth+"-"+begday)
 	println("End date: ", endyearmonth+"-"+endday)
@@ -637,6 +649,8 @@ func main() {
 		return
 	}
 	namefileN := make([]string, 9)
+
+	fmonth = "1" // для теста
 
 	if ftime != "" {
 		//	//-------указывается время новосибирское
