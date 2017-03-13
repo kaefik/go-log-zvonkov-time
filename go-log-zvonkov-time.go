@@ -176,9 +176,9 @@ func readfilecsv(namef string) string {
 func devidezero(i1, i2 int) int {
 	if i2 == 0 {
 		return 0
-	} else {
-		return i1 / i2
 	}
+	return i1 / i2
+
 }
 
 //экспорт данных datas в файл xlsx используя сортировку keys - массив указывающий в каком порядке выводить в таблицу
