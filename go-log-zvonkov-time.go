@@ -158,7 +158,7 @@ func readcfg(namef string) (map[string]DataTelMans, []string) {
 
 		}
 	}
-	fmt.Println(s_inputdata)
+	//	fmt.Println(s_inputdata)
 	return s_inputdata, keyarr
 }
 
@@ -813,7 +813,7 @@ func main() {
 
 	//	fmonth = "1" // для теста
 
-	fotchet = "kazan" // !!!!!!!!!! для теста
+	//	fotchet = "kazan" // !!!!!!!!!! для теста
 
 	if ftime != "" {
 		//	//-------указывается время новосибирское
