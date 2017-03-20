@@ -23,6 +23,7 @@ var (
 	fmonth  string // Флаг выгрузки c первого дня месяца до текущей числа текущего месяца
 	ftime   string // флаг выгрузки разбивкой по времени: МСК 00:00-23:59, 9:00-9:30, 9:31-10:00, 10:01-10:30, 10:31-11:00, 11:01-11:30, 10:31-11:00, 11:01-11:30, 11:31-12:00, 12:01-23:59
 	fresult int    // длительность результативного звонка (в сек)
+	fotchet string // флаг индивидуальных отчетов, если он не задан, то выгружается по умолчанию
 	//	LogFile                                    *log.Logger //
 	begyearmonth, begday, endyearmonth, endday string
 	buf_telunik                                map[string]int // буфер уникальных номеров для текущего внутр номера - длина этого map будет кол-во уникальных номеров
@@ -41,7 +42,7 @@ func InitLogFile(namef string) *log.Logger {
 }
 
 // функция парсинга аргументов программы
-func parse_args() bool {
+func parseArgs() bool {
 	flag.StringVar(&d1, "d1", "", "Начальная дата выгрузки лога звонков: YYYY-MM-DD")
 	flag.StringVar(&d2, "d2", "", "Конечная дата выгрузки лога звонков: YYYY-MM-DD")
 	flag.StringVar(&fweek, "week", "", "Флаг недельной выгрузки: 1")
@@ -49,6 +50,7 @@ func parse_args() bool {
 	flag.StringVar(&ftime, "ftime", "", "Флаг выгрузки разбивкой по времени: МСК 00:00-23:59, 9:00-9:30, 9:31-10:00, 10:01-10:30, 10:31-11:00, 11:01-11:30, 10:31-11:00, 11:01-11:30, 11:31-12:00, 12:01-23:59: 1")
 	flag.StringVar(&t1, "t1", "", "Начальное время выгрузки лога звонков(время НСК): HH:MM")
 	flag.StringVar(&t2, "t2", "", "Конечное время выгрузки лога звонков(время НСК): HH:MM")
+	flag.StringVar(&fotchet, "otchet", "", "флаг индивидуальных отчетов, если он не задан, то выгружается по умолчанию (см в README)")
 	flag.IntVar(&fresult, "fresult", 0, "длительность результативного звонка (в сек)")
 	flag.Parse()
 	if d1 == "" {
@@ -76,6 +78,9 @@ func parse_args() bool {
 		fresult = 20
 	} else {
 		//		LogFile.Println("Продолжительность результативного звонка - ", fresult)
+	}
+	if fotchet == "" {
+		//		LogFile.Println("Не задан параметр -fotchet.")
 	}
 	return true
 }
@@ -137,11 +142,23 @@ func readcfg(namef string) (map[string]DataTelMans, []string) {
 		if vv[i] != "" {
 			vv1 := strings.Split(vv[i], ";")
 			if len(vv1) == 3 {
-				s_inputdata[vv1[0]] = DataTelMans{vv1[2], vv1[1], 0, 0, 0, 0, 0}
+				s_inputdata[vv1[0]] = DataTelMans{vv1[2], vv1[1], 0, 0, 0, 0, 0, 0}
 				keyarr = append(keyarr, vv1[0])
+			} else {
+				if len(vv1) == 4 {
+					vs := strings.Trim(vv1[3], "\n")
+					vs = strings.Trim(vs, " ")
+					vs = strings.Trim(vs, "\r")
+					vv2, err := strconv.Atoi(vs)
+					fmt.Println(err)
+					s_inputdata[vv1[0]] = DataTelMans{vv1[2], vv1[1], 0, 0, 0, 0, 0, vv2}
+					keyarr = append(keyarr, vv1[0])
+				}
 			}
+
 		}
 	}
+	fmt.Println(s_inputdata)
 	return s_inputdata, keyarr
 }
 
@@ -181,7 +198,7 @@ func devidezero(i1, i2 int) int {
 
 }
 
-//экспорт данных datas в файл xlsx используя сортировку keys - массив указывающий в каком порядке выводить в таблицу
+// экспорт данных datas в файл xlsx используя сортировку keys - массив указывающий в каком порядке выводить в таблицу - ПО УМОЛЧАНИЮ
 func savetoxlsx0(namef string, datas map[string]DataTelMans, keys []string) {
 	var file *xlsx.File
 	var sheet *xlsx.Sheet
@@ -313,6 +330,138 @@ func savetoxlsx0(namef string, datas map[string]DataTelMans, keys []string) {
 
 }
 
+// экспорт данных datas в файл xlsx используя сортировку keys - массив указывающий в каком порядке выводить в таблицу - ПО УМОЛЧАНИЮ
+func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) {
+	var file *xlsx.File
+	var sheet *xlsx.Sheet
+	var row *xlsx.Row
+	var cell *xlsx.Cell
+	var err error
+
+	file = xlsx.NewFile()
+	sheet, err = file.AddSheet("лог звонков")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	//заголовок таблицы
+	row = sheet.AddRow() // добавить строку
+	cell = row.AddCell() // добавить ячейку в текущей строке
+	cell.Value = "выгружено: " + time.Now().String()
+
+	row = sheet.AddRow() // добавить строку
+	titletab := []string{"ФИО РГ",
+		"номер телефона",
+		"ФИО менеджера",
+		"всего продолжит-ть",
+		"плановое кол-во результ. звонков",
+		"кол-во уникальных телефонов",
+		"кол-во результ. звонков",
+		"продолжительность уникальных",
+		"средняя время звонка"}
+	for i := 0; i < len(titletab); i++ {
+		cell = row.AddCell() // добавить ячейку в текущей строке
+		cell.Value = titletab[i]
+	}
+
+	//переменные итого по РГ
+	sum_kol_zvonkov := 0 // общее кол-во звоноков
+	sum_totalsec := 0    // общая продолжительность звонков (в сек)
+	sum_kolunik := 0     //кол-во уникальных телефонных номеров
+	sum_kolresult := 0   //кол-во результативных звоноков
+	sum_secresult := 0   // продолжительность результативных звонков (в сек)
+	// END переменные итого по РГ
+
+	name_rg := datas[keys[0]].fio_rg
+
+	for i := 0; i < len(keys); i++ {
+		key := keys[i]
+
+		if strings.Compare(name_rg, datas[key].fio_rg) == 0 {
+			sum_kol_zvonkov += datas[key].totalzv
+			sum_totalsec += datas[key].totalsec
+			sum_kolunik += datas[key].kolunik
+			sum_kolresult += datas[key].kolresult
+			sum_secresult += datas[key].secresult
+
+		} else {
+
+			row = sheet.AddRow()
+			cell = row.AddCell()
+			cell.Value = "Итог"
+			cell = row.AddCell()
+			cell.Value = ""
+			cell = row.AddCell()
+			cell.Value = ""
+			cell = row.AddCell()
+			cell.Value = sec_to_s(sum_totalsec)
+			cell = row.AddCell()
+			cell.Value = "" // strconv.Itoa(sum_kol_zvonkov)
+			cell = row.AddCell()
+			cell.Value = strconv.Itoa(sum_kolunik)
+			cell = row.AddCell()
+			cell.Value = strconv.Itoa(sum_kolresult)
+			cell = row.AddCell()
+			cell.Value = sec_to_s(sum_secresult)
+			cell = row.AddCell()
+			//			cell.Value = sec_to_s(devidezero(datas[key].totalsec, datas[key].totalzv))
+			sum_kol_zvonkov = datas[key].totalzv
+			sum_totalsec = datas[key].totalsec
+			sum_kolunik = datas[key].kolunik
+			sum_kolresult = datas[key].kolresult
+			sum_secresult = datas[key].secresult
+			name_rg = datas[key].fio_rg
+			row = sheet.AddRow()
+		}
+
+		row = sheet.AddRow()
+		cell = row.AddCell()
+		cell.Value = datas[key].fio_rg
+		cell = row.AddCell()
+		cell.Value = key
+		cell = row.AddCell()
+		cell.Value = datas[key].fio_man
+		cell = row.AddCell()
+		cell.Value = sec_to_s(datas[key].totalsec)
+		cell = row.AddCell()
+		cell.Value = strconv.Itoa(datas[key].planresultkolzv)
+		cell = row.AddCell()
+		cell.Value = strconv.Itoa(datas[key].kolunik)
+		cell = row.AddCell()
+		cell.Value = strconv.Itoa(datas[key].kolresult)
+		cell = row.AddCell()
+		cell.Value = sec_to_s(datas[key].secresult)
+		cell = row.AddCell()
+		cell.Value = sec_to_s(devidezero(datas[key].totalsec, datas[key].totalzv))
+
+	}
+
+	row = sheet.AddRow()
+	cell = row.AddCell()
+	cell.Value = "Итог"
+	cell = row.AddCell()
+	cell.Value = ""
+	cell = row.AddCell()
+	cell.Value = ""
+	cell = row.AddCell()
+	cell.Value = sec_to_s(sum_totalsec)
+	cell = row.AddCell()
+	cell.Value = "" // strconv.Itoa(sum_kol_zvonkov)
+	cell = row.AddCell()
+	cell.Value = strconv.Itoa(sum_kolunik)
+	cell = row.AddCell()
+	cell.Value = strconv.Itoa(sum_kolresult)
+	cell = row.AddCell()
+	cell.Value = sec_to_s(sum_secresult)
+	cell = row.AddCell()
+	//			cell.Value = sec_to_s(devidezero(datas[key].totalsec, datas[key].totalzv))
+
+	err = file.Save(namef)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+}
+
 // - функции генерации html page
 //-- генерация ячейки таблицы в html
 func gentablecell(str string) string {
@@ -422,13 +571,14 @@ type InputDataTel struct {
 
 // структура справочника телефонов менеджеров
 type DataTelMans struct {
-	fio_rg    string // ФИО РГ
-	fio_man   string // ФИО менеджера
-	totalsec  int    // общая продолжительность звонков (в сек)
-	kolunik   int    //кол-во уникальных телефонных номеров
-	kolresult int    //кол-во результативных звоноков
-	secresult int    // продолжительность результативных звонков (в сек)
-	totalzv   int    // общее кол-во звоноков
+	fio_rg          string // ФИО РГ
+	fio_man         string // ФИО менеджера
+	totalsec        int    // общая продолжительность звонков (в сек)
+	kolunik         int    //кол-во уникальных телефонных номеров
+	kolresult       int    //кол-во результативных звоноков
+	secresult       int    // продолжительность результативных звонков (в сек)
+	totalzv         int    // общее кол-во звоноков
+	planresultkolzv int    // плановое кол-во результативных звоноков
 }
 
 func num_mes(m time.Month) int { //переводит из типа time.Month в число
@@ -623,16 +773,27 @@ func getLogTime(namef, nameFlog, nameftime, d1, d2, t1, t2, fweek string) string
 			}
 		}
 		tm := strnumtel[key]
-		strnumtel[key] = DataTelMans{tm.fio_rg, tm.fio_man, totsec, len(buf_telunik), kolres, totressec, totkol}
+
+		strnumtel[key] = DataTelMans{tm.fio_rg, tm.fio_man, totsec, len(buf_telunik), kolres, totressec, totkol, tm.planresultkolzv}
 	}
 
 	println("Saving xlsx report")
-	savetoxlsx0(namefresult+".xlsx", strnumtel, keys)
-	str_title := "Лог звонков:  с \n" + begyearmonth + "-" + begday + " по " + endyearmonth + "-" + endday + ". Выгружено: " + curdate.String() + "\n" + nameftime
-	println("Saving html report")
-	htmlresult := genhtmlpage0(strnumtel, str_title, keys)
-	savestrtofile(namefresult+".html", htmlresult)
-	println("The end....")
+	if fotchet != "kazan" {
+		str_title := "Лог звонков:  с \n" + begyearmonth + "-" + begday + " по " + endyearmonth + "-" + endday + ". Выгружено: " + curdate.String() + "\n" + nameftime
+		savetoxlsx0(namefresult+".xlsx", strnumtel, keys)
+		println("Saving html report")
+		htmlresult := genhtmlpage0(strnumtel, str_title, keys)
+		savestrtofile(namefresult+".html", htmlresult)
+		println("The end....")
+	} else {
+
+		savetoxlsxKazan(namefresult+".xlsx", strnumtel, keys)
+		//				str_title := "Лог звонков:  с \n" + begyearmonth + "-" + begday + " по " + endyearmonth + "-" + endday + ". Выгружено: " + curdate.String() + "\n" + nameftime
+		//		println("Saving html report")
+		//		htmlresult := genhtmlpage0(strnumtel, str_title, keys)
+		//		savestrtofile(namefresult+".html", htmlresult)
+		println("The end....")
+	}
 	return namefresult
 }
 
@@ -645,12 +806,14 @@ func main() {
 	//	LogFile.Println("Starting programm")
 
 	//----------------------------------------------
-	if !parse_args() {
+	if !parseArgs() {
 		return
 	}
 	namefileN := make([]string, 9)
 
 	//	fmonth = "1" // для теста
+
+	fotchet = "kazan" // !!!!!!!!!! для теста
 
 	if ftime != "" {
 		//	//-------указывается время новосибирское
