@@ -336,6 +336,9 @@ func setStyleToCell(cell *xlsx.Cell, color string) *xlsx.Cell {
 	style := xlsx.NewStyle()
 	style.Fill = fill
 	style.ApplyFill = true
+	//	style.Alignment.WrapText = true
+	//	style.Alignment.Vertical = "top"
+	//	style.ApplyAlignment = true
 	cell.SetStyle(style)
 	return cell
 }
@@ -363,28 +366,36 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 	indexColorBackground := 0
 
 	row = sheet.AddRow() // добавить строку
+
 	titletab := []string{"ФИО РГ",
 		"номер телефона",
 		"ФИО менеджера",
-		"всего продолжит-ть",
-		"плановое кол-во результ. звонков",
+		"всего продолжит.",
 		"кол-во уникальных телефонов",
+		"плановое кол-во результ. звонков",
 		"кол-во результ. звонков",
 		"продолжительность уникальных",
 		"средняя время звонка"}
+
 	for i := 0; i < len(titletab); i++ {
 		cell = row.AddCell() // добавить ячейку в текущей строке
 		cell.Value = titletab[i]
 		cell = setStyleToCell(cell, colorBackground[indexColorBackground])
+		style := xlsx.NewStyle()
+		//		style.Alignment.WrapText = true
+		//		style.Alignment.Vertical = "top"
+		//		style.ApplyAlignment = true
+		cell.SetStyle(style)
+
 	}
 	indexColorBackground += 1
 	row = sheet.AddRow()
 
-	//переменные итого по РГ
+	// переменные итого по РГ
 	sum_kol_zvonkov := 0     // общее кол-во звоноков
 	sum_totalsec := 0        // общая продолжительность звонков (в сек)
-	sum_kolunik := 0         //кол-во уникальных телефонных номеров
-	sum_kolresult := 0       //кол-во результативных звоноков
+	sum_kolunik := 0         // кол-во уникальных телефонных номеров
+	sum_kolresult := 0       // кол-во результативных звоноков
 	sum_secresult := 0       // продолжительность результативных звонков (в сек)
 	sum_planresultkolzv := 0 // общее кол-во плановых результ. звонков
 	// END переменные итого по РГ
@@ -417,15 +428,19 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 			cell = row.AddCell()
 			cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 			cell.Value = sec_to_s(sum_totalsec)
+			//			cell.SetInt(sum_totalsec)
 			cell = row.AddCell()
 			cell = setStyleToCell(cell, colorBackground[indexColorBackground])
-			cell.Value = strconv.Itoa(sum_planresultkolzv)
+			//			cell.Value = strconv.Itoa(sum_kolunik)
+			cell.SetInt(sum_kolunik)
 			cell = row.AddCell()
 			cell = setStyleToCell(cell, colorBackground[indexColorBackground])
-			cell.Value = strconv.Itoa(sum_kolunik)
+			//			cell.Value = strconv.Itoa(sum_planresultkolzv)
+			cell.SetInt(sum_planresultkolzv)
 			cell = row.AddCell()
 			cell = setStyleToCell(cell, colorBackground[indexColorBackground])
-			cell.Value = strconv.Itoa(sum_kolresult)
+			//			cell.Value = strconv.Itoa(sum_kolresult)
+			cell.SetInt(sum_kolresult)
 			cell = row.AddCell()
 			cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 			cell.Value = sec_to_s(sum_secresult)
@@ -458,26 +473,29 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 		cell.Value = sec_to_s(datas[key].totalsec)
 		cell = row.AddCell()
 		cell = setStyleToCell(cell, colorBackground[indexColorBackground])
-		cell.Value = strconv.Itoa(datas[key].planresultkolzv)
+		//		cell.Value = strconv.Itoa(datas[key].kolunik)
+		cell.SetInt(datas[key].kolunik)
 		cell = row.AddCell()
 		cell = setStyleToCell(cell, colorBackground[indexColorBackground])
-		cell.Value = strconv.Itoa(datas[key].kolunik)
+		//		cell.Value = strconv.Itoa(datas[key].planresultkolzv)
+		cell.SetInt(datas[key].planresultkolzv)
 		cell = row.AddCell()
 		cell = setStyleToCell(cell, colorBackground[indexColorBackground])
-		cell.Value = strconv.Itoa(datas[key].kolresult)
+		//		cell.Value = strconv.Itoa(datas[key].kolresult)
+		cell.SetInt(datas[key].kolresult)
 		cell = row.AddCell()
 		cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 		cell.Value = sec_to_s(datas[key].secresult)
 		cell = row.AddCell()
 		cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 		cell.Value = sec_to_s(devidezero(datas[key].totalsec, datas[key].totalzv))
-
 	}
 
 	row = sheet.AddRow()
 	cell = row.AddCell()
 	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 	cell.Value = "Итог"
+	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 	cell = row.AddCell()
 	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 	cell.Value = ""
@@ -487,15 +505,19 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 	cell = row.AddCell()
 	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 	cell.Value = sec_to_s(sum_totalsec)
+	//			cell.SetInt(sum_totalsec)
 	cell = row.AddCell()
 	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
-	cell.Value = strconv.Itoa(sum_planresultkolzv)
+	//			cell.Value = strconv.Itoa(sum_kolunik)
+	cell.SetInt(sum_kolunik)
 	cell = row.AddCell()
 	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
-	cell.Value = strconv.Itoa(sum_kolunik)
+	//			cell.Value = strconv.Itoa(sum_planresultkolzv)
+	cell.SetInt(sum_planresultkolzv)
 	cell = row.AddCell()
 	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
-	cell.Value = strconv.Itoa(sum_kolresult)
+	//			cell.Value = strconv.Itoa(sum_kolresult)
+	cell.SetInt(sum_kolresult)
 	cell = row.AddCell()
 	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 	cell.Value = sec_to_s(sum_secresult)
@@ -861,7 +883,7 @@ func main() {
 
 	//	fmonth = "1" // для теста
 
-	//	fotchet = "kazan" // !!!!!!!!!! для теста
+	fotchet = "kazan" // !!!!!!!!!! для теста
 
 	if ftime != "" {
 		//	//-------указывается время новосибирское
