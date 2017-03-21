@@ -348,7 +348,7 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 	var cell *xlsx.Cell
 	var err error
 
-	colorBackground := [7]string{"FF8C00", "008000", "00FFFF", "808080", "FFFF00", "40E0D0"}
+	colorBackground := [10]string{"FF8C00", "008000", "00FFFF", "808080", "FFFF00", "40E0D0", "FAEBD7", "2F4F4F", "FF8C00", "008000"}
 
 	file = xlsx.NewFile()
 	sheet, err = file.AddSheet("лог звонков")
@@ -860,7 +860,7 @@ func main() {
 
 	//	fmonth = "1" // для теста
 
-	fotchet = "kazan" // !!!!!!!!!! для теста
+	//	fotchet = "kazan" // !!!!!!!!!! для теста
 
 	if ftime != "" {
 		//	//-------указывается время новосибирское
