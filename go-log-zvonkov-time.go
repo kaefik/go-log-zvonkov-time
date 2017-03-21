@@ -437,6 +437,7 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 			sum_kolunik = datas[key].kolunik
 			sum_kolresult = datas[key].kolresult
 			sum_secresult = datas[key].secresult
+			sum_planresultkolzv = datas[key].planresultkolzv
 			name_rg = datas[key].fio_rg
 			row = sheet.AddRow()
 			indexColorBackground += 1
