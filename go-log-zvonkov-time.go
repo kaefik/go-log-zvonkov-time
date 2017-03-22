@@ -143,18 +143,28 @@ func readcfg(namef string) (map[string]DataTelMans, []string) {
 		if vv[i] != "" {
 			vv1 := strings.Split(vv[i], ";")
 			if len(vv1) == 3 {
-				s_inputdata[vv1[0]] = DataTelMans{vv1[2], vv1[1], 0, 0, 0, 0, 0, 0, 0}
+				s_inputdata[vv1[0]] = DataTelMans{vv1[2], vv1[1], 0, 0, 0, 0, 0, 0, 0, 0}
 				keyarr = append(keyarr, vv1[0])
-			} else {
-				if len(vv1) == 4 {
-					vs := strings.Trim(vv1[3], "\n")
-					vs = strings.Trim(vs, " ")
-					vs = strings.Trim(vs, "\r")
-					vv2, err := strconv.Atoi(vs)
-					fmt.Println(err)
-					s_inputdata[vv1[0]] = DataTelMans{vv1[2], vv1[1], 0, 0, 0, 0, 0, vv2, 0}
-					keyarr = append(keyarr, vv1[0])
-				}
+			}
+			if len(vv1) == 4 {
+				vs := strings.Trim(vv1[3], "\n")
+				vs = strings.Trim(vs, " ")
+				vs = strings.Trim(vs, "\r")
+				vv2, err := strconv.Atoi(vs)
+				fmt.Println(err)
+				s_inputdata[vv1[0]] = DataTelMans{vv1[2], vv1[1], 0, 0, 0, 0, 0, vv2, 0, 0}
+				keyarr = append(keyarr, vv1[0])
+			}
+			if len(vv1) == 5 {
+				vs := strings.Trim(vv1[4], "\n")
+				vs = strings.Trim(vs, " ")
+				vs = strings.Trim(vs, "\r")
+				vv2, err := strconv.Atoi(vs)
+
+				vv3, _ := strconv.Atoi(vv1[3])
+				fmt.Println(err)
+				s_inputdata[vv1[0]] = DataTelMans{vv1[2], vv1[1], 0, 0, 0, 0, 0, vv3, 0, vv2}
+				keyarr = append(keyarr, vv1[0])
 			}
 
 		}
@@ -352,7 +362,7 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 	var cell *xlsx.Cell
 	var err error
 
-	colorBackground := [10]string{"FF8C00", "008000", "00FFFF", "808080", "FFFF00", "40E0D0", "FAEBD7", "2F4F4F", "FF8C00", "008000"}
+	colorBackground := [20]string{"FF8C00", "008000", "00FFFF", "808080", "FFFF00", "40E0D0", "FAEBD7", "2F4F4F", "FF8C00", "008000", "FF8C00", "008000", "00FFFF", "808080", "FFFF00", "40E0D0", "FAEBD7", "2F4F4F", "FF8C00", "008000"}
 
 	file = xlsx.NewFile()
 	sheet, err = file.AddSheet("лог звонков")
@@ -376,6 +386,7 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 		"плановое кол-во результ. звонков",
 		"кол-во результ. звонков",
 		"кол-во уникальных. результ. звонков",
+		"плановое кол-во встреч",
 		"продолжительность уникальных",
 		"средняя время звонка"}
 
@@ -446,6 +457,9 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 			cell.SetInt(sum_reskolunik)
 			cell = row.AddCell()
 			cell = setStyleToCell(cell, colorBackground[indexColorBackground])
+			cell.SetInt(0)
+			cell = row.AddCell()
+			cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 			cell.Value = sec_to_s(sum_secresult)
 			cell = row.AddCell()
 			cell = setStyleToCell(cell, colorBackground[indexColorBackground])
@@ -489,6 +503,9 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 		cell.SetInt(datas[key].kolunikresult)
 		cell = row.AddCell()
 		cell = setStyleToCell(cell, colorBackground[indexColorBackground])
+		cell.SetInt(datas[key].plankolvstrech)
+		cell = row.AddCell()
+		cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 		cell.Value = sec_to_s(datas[key].secresult)
 		cell = row.AddCell()
 		cell = setStyleToCell(cell, colorBackground[indexColorBackground])
@@ -521,6 +538,9 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 	cell = row.AddCell()
 	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 	cell.SetInt(sum_reskolunik)
+	cell = row.AddCell()
+	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
+	cell.SetInt(0)
 	cell = row.AddCell()
 	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 	cell.Value = sec_to_s(sum_secresult)
@@ -653,7 +673,7 @@ type DataTelMans struct {
 	totalzv         int    // общее кол-во звоноков
 	planresultkolzv int    // плановое кол-во результативных звоноков
 	kolunikresult   int    // кол-во уникальных результ. звонков
-
+	plankolvstrech  int    // плановое количество встреч
 }
 
 func num_mes(m time.Month) int { //переводит из типа time.Month в число
@@ -862,7 +882,7 @@ func getLogTime(namef, nameFlog, nameftime, d1, d2, t1, t2, fweek string) string
 		}
 		tm := strnumtel[key]
 
-		strnumtel[key] = DataTelMans{tm.fio_rg, tm.fio_man, totsec, len(buf_telunik), kolres, totressec, totkol, tm.planresultkolzv, len(buf_restelunik)}
+		strnumtel[key] = DataTelMans{tm.fio_rg, tm.fio_man, totsec, len(buf_telunik), kolres, totressec, totkol, tm.planresultkolzv, len(buf_restelunik), tm.plankolvstrech}
 	}
 
 	println("Saving xlsx report")
