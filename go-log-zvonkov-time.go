@@ -27,6 +27,7 @@ var (
 	//	LogFile                                    *log.Logger //
 	begyearmonth, begday, endyearmonth, endday string
 	buf_telunik                                map[string]int // буфер уникальных номеров для текущего внутр номера - длина этого map будет кол-во уникальных номеров
+	buf_restelunik                             map[string]int // буфер уникальных номеров результативных звонков для текущего внутр номера - длина этого map будет кол-во уникальных номеров
 	t1hour, t1minute, t2hour, t2minute         int
 )
 
@@ -142,7 +143,7 @@ func readcfg(namef string) (map[string]DataTelMans, []string) {
 		if vv[i] != "" {
 			vv1 := strings.Split(vv[i], ";")
 			if len(vv1) == 3 {
-				s_inputdata[vv1[0]] = DataTelMans{vv1[2], vv1[1], 0, 0, 0, 0, 0, 0}
+				s_inputdata[vv1[0]] = DataTelMans{vv1[2], vv1[1], 0, 0, 0, 0, 0, 0, 0}
 				keyarr = append(keyarr, vv1[0])
 			} else {
 				if len(vv1) == 4 {
@@ -151,7 +152,7 @@ func readcfg(namef string) (map[string]DataTelMans, []string) {
 					vs = strings.Trim(vs, "\r")
 					vv2, err := strconv.Atoi(vs)
 					fmt.Println(err)
-					s_inputdata[vv1[0]] = DataTelMans{vv1[2], vv1[1], 0, 0, 0, 0, 0, vv2}
+					s_inputdata[vv1[0]] = DataTelMans{vv1[2], vv1[1], 0, 0, 0, 0, 0, vv2, 0}
 					keyarr = append(keyarr, vv1[0])
 				}
 			}
@@ -374,6 +375,7 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 		"кол-во уникальных телефонов",
 		"плановое кол-во результ. звонков",
 		"кол-во результ. звонков",
+		"кол-во уникальных. результ. звонков",
 		"продолжительность уникальных",
 		"средняя время звонка"}
 
@@ -398,6 +400,7 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 	sum_kolresult := 0       // кол-во результативных звоноков
 	sum_secresult := 0       // продолжительность результативных звонков (в сек)
 	sum_planresultkolzv := 0 // общее кол-во плановых результ. звонков
+	sum_reskolunik := 0      // кол-во уникальных результативных телефонных номеров
 	// END переменные итого по РГ
 
 	name_rg := datas[keys[0]].fio_rg
@@ -412,6 +415,7 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 			sum_kolresult += datas[key].kolresult
 			sum_secresult += datas[key].secresult
 			sum_planresultkolzv += datas[key].planresultkolzv
+			sum_reskolunik += datas[key].kolunikresult
 
 		} else {
 
@@ -428,19 +432,18 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 			cell = row.AddCell()
 			cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 			cell.Value = sec_to_s(sum_totalsec)
-			//			cell.SetInt(sum_totalsec)
 			cell = row.AddCell()
 			cell = setStyleToCell(cell, colorBackground[indexColorBackground])
-			//			cell.Value = strconv.Itoa(sum_kolunik)
 			cell.SetInt(sum_kolunik)
 			cell = row.AddCell()
 			cell = setStyleToCell(cell, colorBackground[indexColorBackground])
-			//			cell.Value = strconv.Itoa(sum_planresultkolzv)
 			cell.SetInt(sum_planresultkolzv)
 			cell = row.AddCell()
 			cell = setStyleToCell(cell, colorBackground[indexColorBackground])
-			//			cell.Value = strconv.Itoa(sum_kolresult)
 			cell.SetInt(sum_kolresult)
+			cell = row.AddCell()
+			cell = setStyleToCell(cell, colorBackground[indexColorBackground])
+			cell.SetInt(sum_reskolunik)
 			cell = row.AddCell()
 			cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 			cell.Value = sec_to_s(sum_secresult)
@@ -453,6 +456,7 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 			sum_kolresult = datas[key].kolresult
 			sum_secresult = datas[key].secresult
 			sum_planresultkolzv = datas[key].planresultkolzv
+			sum_reskolunik = datas[key].kolunikresult
 			name_rg = datas[key].fio_rg
 			row = sheet.AddRow()
 			indexColorBackground += 1
@@ -473,16 +477,16 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 		cell.Value = sec_to_s(datas[key].totalsec)
 		cell = row.AddCell()
 		cell = setStyleToCell(cell, colorBackground[indexColorBackground])
-		//		cell.Value = strconv.Itoa(datas[key].kolunik)
 		cell.SetInt(datas[key].kolunik)
 		cell = row.AddCell()
 		cell = setStyleToCell(cell, colorBackground[indexColorBackground])
-		//		cell.Value = strconv.Itoa(datas[key].planresultkolzv)
 		cell.SetInt(datas[key].planresultkolzv)
 		cell = row.AddCell()
 		cell = setStyleToCell(cell, colorBackground[indexColorBackground])
-		//		cell.Value = strconv.Itoa(datas[key].kolresult)
 		cell.SetInt(datas[key].kolresult)
+		cell = row.AddCell()
+		cell = setStyleToCell(cell, colorBackground[indexColorBackground])
+		cell.SetInt(datas[key].kolunikresult)
 		cell = row.AddCell()
 		cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 		cell.Value = sec_to_s(datas[key].secresult)
@@ -505,19 +509,18 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 	cell = row.AddCell()
 	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 	cell.Value = sec_to_s(sum_totalsec)
-	//			cell.SetInt(sum_totalsec)
 	cell = row.AddCell()
 	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
-	//			cell.Value = strconv.Itoa(sum_kolunik)
 	cell.SetInt(sum_kolunik)
 	cell = row.AddCell()
 	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
-	//			cell.Value = strconv.Itoa(sum_planresultkolzv)
 	cell.SetInt(sum_planresultkolzv)
 	cell = row.AddCell()
 	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
-	//			cell.Value = strconv.Itoa(sum_kolresult)
 	cell.SetInt(sum_kolresult)
+	cell = row.AddCell()
+	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
+	cell.SetInt(sum_reskolunik)
 	cell = row.AddCell()
 	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 	cell.Value = sec_to_s(sum_secresult)
@@ -649,6 +652,8 @@ type DataTelMans struct {
 	secresult       int    // продолжительность результативных звонков (в сек)
 	totalzv         int    // общее кол-во звоноков
 	planresultkolzv int    // плановое кол-во результативных звоноков
+	kolunikresult   int    // кол-во уникальных результ. звонков
+
 }
 
 func num_mes(m time.Month) int { //переводит из типа time.Month в число
@@ -738,6 +743,17 @@ func getLogTime(namef, nameFlog, nameftime, d1, d2, t1, t2, fweek string) string
 		endyearmonth = strconv.Itoa(tekyear) + "-" + strconv.Itoa(num_mes(tekmonth))
 		endday = strconv.Itoa(tekday)
 	}
+
+	// -------------- ДЛЯ ТЕСТА
+	//	tekyear := 2017
+	//	tekmonth := 3
+	//	tekday := 21
+	//	begyearmonth = strconv.Itoa(tekyear) + "-" + strconv.Itoa(tekmonth)
+	//	endyearmonth = strconv.Itoa(tekyear) + "-" + strconv.Itoa(tekmonth)
+	//	begday = strconv.Itoa(tekday)
+	//	endday = strconv.Itoa(tekday)
+	// -------------- END ДЛЯ ТЕСТА
+
 	namefresult := nameftime + " - " + begyearmonth + "-" + begday + " по " + endyearmonth + "-" + endday + " - лог звонков"
 	println("Begin date: ", begyearmonth+"-"+begday)
 	println("End date: ", endyearmonth+"-"+endday)
@@ -824,6 +840,7 @@ func getLogTime(namef, nameFlog, nameftime, d1, d2, t1, t2, fweek string) string
 	for key, _ := range strnumtel {
 		numtel := key
 		buf_telunik = make(map[string]int)
+		buf_restelunik = make(map[string]int)
 		totkol = 0    // общее кол-во звонков
 		kolres = 0    // счетчик кол-ва результативных звонков
 		totressec = 0 // счетчик продолжительности результативных звонков
@@ -839,12 +856,13 @@ func getLogTime(namef, nameFlog, nameftime, d1, d2, t1, t2, fweek string) string
 				if s_inputdata[i].secs >= res_sec { // фильтрация по условию результирующего звонка
 					kolres += 1
 					totressec += s_inputdata[i].secs
+					buf_restelunik[s_inputdata[i].teldest] += 1
 				}
 			}
 		}
 		tm := strnumtel[key]
 
-		strnumtel[key] = DataTelMans{tm.fio_rg, tm.fio_man, totsec, len(buf_telunik), kolres, totressec, totkol, tm.planresultkolzv}
+		strnumtel[key] = DataTelMans{tm.fio_rg, tm.fio_man, totsec, len(buf_telunik), kolres, totressec, totkol, tm.planresultkolzv, len(buf_restelunik)}
 	}
 
 	println("Saving xlsx report")
@@ -883,7 +901,7 @@ func main() {
 
 	//	fmonth = "1" // для теста
 
-	fotchet = "kazan" // !!!!!!!!!! для теста
+	//	fotchet = "kazan" // !!!!!!!!!! для теста
 
 	if ftime != "" {
 		//	//-------указывается время новосибирское
