@@ -412,6 +412,7 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 	sum_secresult := 0       // продолжительность результативных звонков (в сек)
 	sum_planresultkolzv := 0 // общее кол-во плановых результ. звонков
 	sum_reskolunik := 0      // кол-во уникальных результативных телефонных номеров
+	sum_plankolvstrech := 0  // общее кол-во плановых встреч
 	// END переменные итого по РГ
 
 	name_rg := datas[keys[0]].fio_rg
@@ -427,6 +428,7 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 			sum_secresult += datas[key].secresult
 			sum_planresultkolzv += datas[key].planresultkolzv
 			sum_reskolunik += datas[key].kolunikresult
+			sum_plankolvstrech += datas[key].plankolvstrech
 
 		} else {
 
@@ -457,7 +459,7 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 			cell.SetInt(sum_reskolunik)
 			cell = row.AddCell()
 			cell = setStyleToCell(cell, colorBackground[indexColorBackground])
-			cell.SetInt(0)
+			cell.SetInt(sum_plankolvstrech)
 			cell = row.AddCell()
 			cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 			cell.Value = sec_to_s(sum_secresult)
@@ -540,7 +542,7 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 	cell.SetInt(sum_reskolunik)
 	cell = row.AddCell()
 	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
-	cell.SetInt(0)
+	cell.SetInt(sum_plankolvstrech)
 	cell = row.AddCell()
 	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 	cell.Value = sec_to_s(sum_secresult)
@@ -920,8 +922,9 @@ func main() {
 	namefileN := make([]string, 9)
 
 	//	fmonth = "1" // для теста
+	ftime = "1"
 
-	//	fotchet = "kazan" // !!!!!!!!!! для теста
+	fotchet = "kazan" // !!!!!!!!!! для теста
 
 	if ftime != "" {
 		//	//-------указывается время новосибирское
