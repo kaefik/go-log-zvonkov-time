@@ -981,7 +981,7 @@ func main() {
 	namefileN[0] = getLogTime("Report00.csv", nameFlog, "время 00-00 до 23-59 - ", d1, d2, t1, t2, fweek)
 	println("")
 
-	indexhtmlresult := genhtmlpageindex(namefileN)
+	//	indexhtmlresult := genhtmlpageindex(namefileN)
 	//	savestrtofile("log-zvonkov.html", indexhtmlresult)
 }
 
