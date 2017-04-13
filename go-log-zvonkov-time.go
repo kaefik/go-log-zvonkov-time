@@ -982,7 +982,7 @@ func main() {
 	println("")
 
 	indexhtmlresult := genhtmlpageindex(namefileN)
-	savestrtofile("log-zvonkov.html", indexhtmlresult)
+	//	savestrtofile("log-zvonkov.html", indexhtmlresult)
 }
 
 func genhtmlpageindex(nf []string) string {
