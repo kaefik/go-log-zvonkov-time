@@ -385,6 +385,7 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 		"кол-во уникальных телефонов",
 		"плановое кол-во результ. звонков",
 		"кол-во результ. звонков",
+		"Дельта звонков (факт минус план)",
 		"кол-во уникальных. результ. звонков",
 		"плановое кол-во встреч",
 		"факт встреч",
@@ -457,6 +458,9 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 			cell.SetInt(sum_kolresult)
 			cell = row.AddCell()
 			cell = setStyleToCell(cell, colorBackground[indexColorBackground])
+			cell.SetInt(sum_kolresult - sum_planresultkolzv)
+			cell = row.AddCell()
+			cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 			cell.SetInt(sum_reskolunik)
 			cell = row.AddCell()
 			cell = setStyleToCell(cell, colorBackground[indexColorBackground])
@@ -505,6 +509,9 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 		cell.SetInt(datas[key].kolresult)
 		cell = row.AddCell()
 		cell = setStyleToCell(cell, colorBackground[indexColorBackground])
+		cell.SetInt(datas[key].kolresult - datas[key].planresultkolzv)
+		cell = row.AddCell()
+		cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 		cell.SetInt(datas[key].kolunikresult)
 		cell = row.AddCell()
 		cell = setStyleToCell(cell, colorBackground[indexColorBackground])
@@ -542,6 +549,9 @@ func savetoxlsxKazan(namef string, datas map[string]DataTelMans, keys []string) 
 	cell = row.AddCell()
 	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 	cell.SetInt(sum_kolresult)
+	cell = row.AddCell()
+	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
+	cell.SetInt(sum_kolresult - sum_planresultkolzv)
 	cell = row.AddCell()
 	cell = setStyleToCell(cell, colorBackground[indexColorBackground])
 	cell.SetInt(sum_reskolunik)
